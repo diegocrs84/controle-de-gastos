@@ -1,62 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quanto vai sobrar — Controle de almoço</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #1F2D3D;
+    --ink-soft: #4B5D6B;
+    --paper: #EDF3EC;
+    --paper-line: #C9D6C7;
+    --bg: #14201C;
+    --bg-panel: #1B2A24;
+    --stamp-red: #B23A2E;
+    --gold: #C9A227;
+    --paper-shadow: rgba(0,0,0,.35);
+  }
 
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
 
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(201,162,39,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(178,58,46,0.07), transparent 45%);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 64px;
+  }
 
+  .wrap{
+    max-width: 1040px;
+    margin: 0 auto;
+  }
 
+  header.page-head{
+    text-align:center;
+    margin-bottom: 32px;
+    color: #F1EFE6;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing: .28em;
+    font-size: 12px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1{
+    font-family:'Roboto Slab', serif;
+    font-weight:700;
+    font-size: clamp(28px, 5vw, 44px);
+    margin: 0 0 10px;
+    line-height:1.1;
+  }
+  header.page-head p{
+    color: #B9C4BC;
+    font-size: 15px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
 
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media (min-width: 860px){
+    .grid{ grid-template-columns: 380px 1fr; align-items:start; }
+  }
 
+  /* form panel */
+  .panel{
+    background: var(--bg-panel);
+    border: 1px solid rgba(201,162,39,0.18);
+    border-radius: 10px;
+    padding: 24px;
+    color: #EDEBDF;
+  }
+  .panel h2{
+    font-family:'Roboto Slab', serif;
+    font-size: 18px;
+    margin: 0 0 18px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .panel h2::before{
+    content:"";
+    width:8px; height:8px;
+    background: var(--gold);
+    border-radius: 50%;
+    display:inline-block;
+  }
 
+  label{
+    display:block;
+    font-size: 12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color: #9FB0A4;
+    margin-bottom: 6px;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .field{ margin-bottom: 18px; }
+  .input-money, input[type="number"], input[type="date"]{
+    width:100%;
+    background: #10201A;
+    border: 1px solid #33463C;
+    color: #F1EFE6;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 17px;
+    padding: 12px 14px;
+    border-radius: 6px;
+    outline:none;
+    transition: border-color .15s ease;
+  }
+  .input-money:focus, input[type="number"]:focus, input[type="date"]:focus{
+    border-color: var(--gold);
+  }
+  .prefix-wrap{ position:relative; }
+  .prefix-wrap span{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-family:'JetBrains Mono', monospace; color:#9FB0A4; font-size:17px;
+  }
+  .prefix-wrap .input-money{ padding-left: 34px; }
 
-  Controle de saldo · dias úteis
+  button.calc-btn{
+    width:100%;
+    margin-top: 6px;
+    background: var(--gold);
+    color: #1B2A24;
+    border:none;
+    font-family:'Roboto Slab', serif;
+    font-weight:700;
+    font-size:16px;
+    padding: 14px;
+    border-radius: 6px;
+    cursor:pointer;
+    letter-spacing:.02em;
+    transition: transform .1s ease, background .15s ease;
+  }
+  button.calc-btn:hover{ background:#DDB93A; }
+  button.calc-btn:active{ transform: scale(.98); }
+
+  .hint{
+    font-size:12px;
+    color:#8B9C91;
+    margin-top:14px;
+    line-height:1.5;
+  }
+
+  /* receipt */
+  .receipt-outer{ min-height: 100%; }
+  .receipt{
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 18px 40px var(--paper-shadow);
+    position:relative;
+    padding: 30px 26px 26px;
+    color: var(--ink);
+  }
+  .perf{
+    position:absolute;
+    top:0; left:0; right:0;
+    height: 14px;
+    background:
+      radial-gradient(circle at 10px 0, transparent 7px, var(--bg) 7px) top left/20px 14px repeat-x;
+    transform: translateY(-1px);
+  }
+  .receipt-body{ padding-top: 6px; }
+
+  .r-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--paper-line);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  .r-row .label{ color: var(--ink-soft); text-transform:none; letter-spacing:0; }
+  .r-row .value{ font-weight:600; }
+
+  .r-total{
+    margin-top: 16px;
+    text-align:center;
+    padding: 18px 10px;
+    border: 2px solid var(--stamp-red);
+    border-radius: 6px;
+    color: var(--stamp-red);
+    transform: rotate(-1deg);
+    position:relative;
+  }
+  .r-total .r-total-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .r-total .r-total-value{
+    font-family:'Roboto Slab', serif;
+    font-weight:700;
+    font-size: clamp(28px, 5vw, 38px);
+  }
+
+  .cut-line{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin: 22px 0 16px;
+    color: var(--ink-soft);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+  .cut-line::before, .cut-line::after{
+    content:"";
+    flex:1;
+    border-top: 1px dashed var(--paper-line);
+  }
+
+  details.breakdown summary{
+    cursor:pointer;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    padding: 6px 0;
+    list-style:none;
+  }
+  details.breakdown summary::-webkit-details-marker{ display:none; }
+  details.breakdown summary::before{
+    content:"▸ ";
+    color: var(--gold);
+  }
+  details.breakdown[open] summary::before{ content:"▾ "; }
+
+  .day-list{
+    margin-top: 10px;
+    max-height: 320px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  .day-row{
+    display:grid;
+    grid-template-columns: 26px 1fr auto auto;
+    gap: 10px;
+    align-items:center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--paper-line);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12.5px;
+  }
+  .day-row .idx{ color:#9CA8A0; }
+  .day-row .date{ color: var(--ink); }
+  .day-row .spend{ color: var(--stamp-red); text-align:right; }
+  .day-row .bal{ font-weight:600; text-align:right; }
+
+  .empty-state{
+    color: var(--ink-soft);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    text-align:center;
+    padding: 40px 10px;
+  }
+
+  @media (max-width: 400px){
+    .day-row{ grid-template-columns: 20px 1fr auto auto; font-size: 11.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page-head">
+    <div class="eyebrow">Controle de saldo · dias úteis</div>
     <h1>Quanto vai sobrar até o fim do mês</h1>
     <p>Informe o saldo atual, o gasto médio por dia e a data de início. O cálculo considera apenas dias úteis (segunda a sexta) do mês do dia informado.</p>
-  
+  </header>
 
-  
-    
+  <div class="grid">
+    <section class="panel">
       <h2>Dados</h2>
 
-      
+      <div class="field">
         <label for="saldo">Saldo atual</label>
-        
-          R$
-          
-        
-      
+        <div class="prefix-wrap">
+          <span>R$</span>
+          <input class="input-money" type="text" inputmode="decimal" id="saldo" placeholder="664,46">
+        </div>
+      </div>
 
-      
+      <div class="field">
         <label for="gasto">Gasto médio por dia</label>
-        
-          R$
-          
-        
-      
+        <div class="prefix-wrap">
+          <span>R$</span>
+          <input class="input-money" type="text" inputmode="decimal" id="gasto" placeholder="40,00">
+        </div>
+      </div>
 
-      
+      <div class="field">
         <label for="dataInicio">Contar a partir de</label>
-        
-      
+        <input type="date" id="dataInicio">
+      </div>
 
-      
+      <div class="field">
         <label for="feriados">Feriados no mês</label>
-        
-      
+        <input type="number" id="feriados" min="0" step="1" value="0" inputmode="numeric">
+      </div>
 
-      Calcular saldo final
+      <button class="calc-btn" id="calcBtn">Calcular saldo final</button>
 
-      <p>O período considerado vai da data escolhida até o último dia do mesmo mês. Sábados, domingos e os feriados informados não entram na conta.</p>
-    
+      <p class="hint">O período considerado vai da data escolhida até o último dia do mesmo mês. Sábados, domingos e os feriados informados não entram na conta.</p>
+    </section>
 
-    
-      
-        
-        
-        
-          Preencha os dados ao lado e toque em<br>&#34;Calcular saldo final&#34; para ver o resultado.
-        
-      
-    
-  
+    <section class="receipt-outer">
+      <div class="receipt">
+        <div class="perf"></div>
+        <div class="receipt-body" id="receiptBody">
+          <div class="empty-state">Preencha os dados ao lado e toque em<br>"Calcular saldo final" para ver o resultado.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
 
+<script>
+(function(){
+  const saldoInput = document.getElementById('saldo');
+  const gastoInput = document.getElementById('gasto');
+  const dataInput = document.getElementById('dataInicio');
+  const feriadosInput = document.getElementById('feriados');
+  const btn = document.getElementById('calcBtn');
+  const body = document.getElementById('receiptBody');
 
+  // default date = today
+  const today = new Date();
+  const iso = today.toISOString().slice(0,10);
+  dataInput.value = iso;
 
+  function parseMoney(str){
+    if(!str) return NaN;
+    const cleaned = str.replace(/[^0-9,.-]/g,'').replace(/\.(?=.*\.)/g,'');
+    const normalized = cleaned.replace(',', '.');
+    return parseFloat(normalized);
+  }
 
+  function brl(n){
+    return n.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+  }
+
+  const dayNames = ['dom','seg','ter','qua','qui','sex','sáb'];
+  const monthNames = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  function formatDate(d){
+    return `${dayNames[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${monthNames[d.getMonth()]}`;
+  }
+
+  function calcular(){
+    const saldo = parseMoney(saldoInput.value);
+    const gasto = parseMoney(gastoInput.value);
+    const feriados = Number(feriadosInput.value);
+    const dataVal = dataInput.value;
+
+    if(isNaN(saldo) || isNaN(gasto) || !Number.isInteger(feriados) || feriados < 0 || !dataVal){
+      body.innerHTML = '<div class="empty-state">Confira os campos: saldo, gasto médio, feriados e data<br>precisam estar preenchidos corretamente.</div>';
+      return;
+    }
+
+    const [y, m, d] = dataVal.split('-').map(Number);
+    const start = new Date(y, m - 1, d);
+    const lastDay = new Date(y, m, 0); // last day of month
+
+    const businessDays = [];
+    const cursor = new Date(start);
+    while(cursor <= lastDay){
+      const dow = cursor.getDay();
+      if(dow !== 0 && dow !== 6){
+        businessDays.push(new Date(cursor));
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    const diasUteisConsiderados = Math.max(0, businessDays.length - feriados);
+    const totalGasto = diasUteisConsiderados * gasto;
+    const saldoFinal = saldo - totalGasto;
+
+    const periodoStr = `${String(start.getDate()).padStart(2,'0')}/${String(start.getMonth()+1).padStart(2,'0')}/${start.getFullYear()} a ${String(lastDay.getDate()).padStart(2,'0')}/${String(lastDay.getMonth()+1).padStart(2,'0')}/${lastDay.getFullYear()}`;
+
+    let runningBalance = saldo;
+    const rows = businessDays.slice(0, diasUteisConsiderados).map((day, i) => {
+      runningBalance -= gasto;
+      return `<div class="day-row">
+        <span class="idx">${i+1}</span>
+        <span class="date">${formatDate(day)}</span>
+        <span class="spend">-${brl(gasto)}</span>
+        <span class="bal">${brl(runningBalance)}</span>
+      </div>`;
+    }).join('');
+
+    body.innerHTML = `
+      <div class="r-row"><span class="label">Período</span><span class="value">${periodoStr}</span></div>
+      <div class="r-row"><span class="label">Dias úteis no período</span><span class="value">${businessDays.length}</span></div>
+      <div class="r-row"><span class="label">Feriados descontados</span><span class="value">${Math.min(feriados, businessDays.length)}</span></div>
+      <div class="r-row"><span class="label">Dias úteis considerados</span><span class="value">${diasUteisConsiderados}</span></div>
+      <div class="r-row"><span class="label">Saldo inicial</span><span class="value">${brl(saldo)}</span></div>
+      <div class="r-row"><span class="label">Gasto por dia</span><span class="value">${brl(gasto)}</span></div>
+      <div class="r-row"><span class="label">Gasto total</span><span class="value">${brl(totalGasto)}</span></div>
+
+      <div class="r-total">
+        <div class="r-total-label">Saldo final previsto</div>
+        <div class="r-total-value">${brl(saldoFinal)}</div>
+      </div>
+
+      <div class="cut-line">detalhamento</div>
+
+      <details class="breakdown">
+        <summary>Ver saldo dia a dia (${diasUteisConsiderados} dias úteis)</summary>
+        <div class="day-list">${rows}</div>
+      </details>
+    `;
+  }
+
+  btn.addEventListener('click', calcular);
+  saldoInput.value = '000,00';
+  gastoInput.value = '40,00';
+  calcular();
+})();
+</script>
+</body>
+</html>
